@@ -1,4 +1,4 @@
-package com.hmo.rd.handler
+package com.hmo.rd.service
 
 import com.hmo.rd.entity.Car
 import com.hmo.rd.repository.CarRepository

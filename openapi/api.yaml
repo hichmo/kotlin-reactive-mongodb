@@ -1,0 +1,128 @@
+openapi: "3.0.1"
+info:
+  version: 1.0.0
+  title: Demo cars data API specification
+  description: |
+    An API that manages cars
+  contact:
+    name: Hichem Mouatadiri
+paths:
+  /cars:
+    get:
+      tags:
+        - cars
+      summary: Finds Cars
+      description: Return the list of cars
+      operationId: findCars
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cars'
+    post:
+      tags:
+        - cars
+      summary: Add a new car
+      operationId: addCar
+      requestBody:
+        description: Car object that needs to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Car'
+      responses:
+        201:
+          description: Created
+          headers:
+            location:
+              schema:
+                type: string
+              description: URI of a newly created car
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+  /cars/{id}:
+    get:
+      tags:
+        - cars
+      summary: Find car by ID
+      description: Returns a single car
+      operationId: getCarById
+      parameters:
+        - name: id
+          in: path
+          description: ID of car to return
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        404:
+          description: Car not found
+    put:
+      tags:
+        - cars
+      summary: Update an existing car
+      operationId: updateCar
+      parameters:
+        - name: id
+          in: path
+          description: car id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Car object that needs to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Car'
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Car'
+        404:
+          description: Car not found
+    delete:
+      tags:
+        - cars
+      summary: Deletes a car
+      operationId: deleteCar
+      parameters:
+        - name: id
+          in: path
+          description: Car ID to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: successful operation
+        404:
+          description: Car not found
+components:
+  schemas:
+    Cars:
+      type: array
+      items:
+        $ref: '#/components/schemas/Car'
+    Car:
+      type: object
+      properties:
+        id:
+          type: string
+        model:
+          type: string
