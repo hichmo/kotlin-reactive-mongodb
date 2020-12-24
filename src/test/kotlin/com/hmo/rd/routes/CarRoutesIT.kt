@@ -3,27 +3,49 @@ package com.hmo.rd.routes
 import com.hmo.rd.entity.Car
 import com.hmo.rd.repository.CarRepository
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.testcontainers.containers.MongoDBContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import reactor.core.publisher.Mono
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Testcontainers
 class CarRoutesIT(@Autowired val webTestClient: WebTestClient,
                   @Autowired val repository: CarRepository) {
 
+    companion object {
+
+        @Container
+        @JvmField
+        val mongoContainer: MongoDBContainer = MongoDBContainer("mongo:latest")
+
+        init {
+            mongoContainer.start()
+        }
+
+        @DynamicPropertySource
+        @JvmStatic
+        fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
+            registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);
+        }
+
+    }
+
     @BeforeEach
-    fun cleanUp() {
+    fun setup() {
         repository.deleteAll().subscribe()
     }
 
     @Test
-    @DisplayName("Test find all cars, expected Status OK 200 and body size 3")
-    fun should_return_status_ok() {
+    fun `When findAll then return Cars and Status 200`() {
 
         repository.saveAll(mutableListOf(Car("", "Renault Scenic"),
                 Car("", "Renault Captur"),
@@ -32,23 +54,22 @@ class CarRoutesIT(@Autowired val webTestClient: WebTestClient,
         webTestClient.get().uri("/cars")
                 .exchange()
                 .expectStatus().isOk
-                .expectBodyList(Car::class.java).hasSize(3)
+                .expectBodyList(Car::class.java)
+                .hasSize(3)
     }
 
-
     @Test
-    @DisplayName("Test find Car by unknown id, expected Status Not found 404")
-    fun should_return_status_not_found() {
+    fun `When findByWrongId then return status 404 `() {
+
         webTestClient.get().uri("/cars/ssss")
                 .exchange()
                 .expectStatus().isNotFound
     }
 
     @Test
-    @DisplayName("Test find Car by id, expected body with Car")
-    fun should_return_car_when_get_by_id() {
+    fun `When findById then return Car with status 200`() {
 
-        var id = saveCar().block()!!.id
+        val id = saveCar().block()!!.id
         webTestClient.get().uri("/cars/$id")
                 .exchange()
                 .expectStatus().isOk
@@ -56,10 +77,10 @@ class CarRoutesIT(@Autowired val webTestClient: WebTestClient,
     }
 
     @Test
-    @DisplayName("Test post Car, expected Status Created 201 and body with Car")
-    fun should_return_car_when_post() {
+    fun `When saveCar then return Car with status 201`() {
+
         webTestClient.post().uri("/cars")
-                .body(Mono.just(Car(null,"Renault Espace")), Car::class.java)
+                .body(Mono.just(Car(null, "Renault Espace")), Car::class.java)
                 .exchange()
                 .expectHeader().exists("Location")
                 .expectStatus().isCreated
@@ -68,13 +89,12 @@ class CarRoutesIT(@Autowired val webTestClient: WebTestClient,
     }
 
     @Test
-    @DisplayName("Test update Car, expected Status 200 and body with Car correctly updated")
-    fun should_return_car_when_put() {
+    fun `When update car then return Car correctly updated with status 200`() {
 
-        var car = saveCar().block()
+        val car = saveCar().block()
         car!!.model = "Renault Clio Restyled"
 
-        webTestClient.put().uri("/cars/"+car.id)
+        webTestClient.put().uri("/cars/" + car.id)
                 .body(Mono.just(car), Car::class.java)
                 .exchange()
                 .expectStatus().isOk
@@ -84,20 +104,16 @@ class CarRoutesIT(@Autowired val webTestClient: WebTestClient,
     }
 
     @Test
-    @DisplayName("Test delete Car by id, expected Status No Content 204")
-    fun should_return_status_no_content_when_delete() {
+    fun `When delete car then return status 204`() {
+
         val id = saveCar().block()!!.id
+
         webTestClient.delete().uri("/cars/$id")
                 .exchange()
                 .expectStatus().isNoContent
-
-        webTestClient.get().uri("/cars/$id")
-                .exchange()
-                .expectStatus().isNotFound
-
     }
 
     fun saveCar(): Mono<Car> {
-        return repository.save(Car(null,"Renault Clio"))
+        return repository.save(Car(null, "Renault Clio"))
     }
 }
