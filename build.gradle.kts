@@ -23,7 +23,7 @@ repositories {
     mavenCentral()
 }
 
-extra["testcontainersVersion"] = "1.14.3"
+val testcontainersVersion = "1.15.1"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -44,8 +44,13 @@ dependencies {
     }
     testImplementation("io.projectreactor:reactor-test")
 
-    compileOnly("org.springdoc:springdoc-openapi-webflux-ui:1.4.6")
-    compileOnly("org.springdoc:springdoc-openapi-kotlin:1.4.6")
+    compileOnly("org.springdoc:springdoc-openapi-webflux-ui:1.5.1")
+    compileOnly("org.springdoc:springdoc-openapi-kotlin:1.5.1")
+
+    testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
+    testImplementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
+    testImplementation("org.testcontainers:mongodb:$testcontainersVersion")
+    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.23")
 
 }
 
