@@ -1,4 +1,4 @@
-package com.hmo.rd.routes
+package com.hmo.rd.controller
 
 import com.hmo.rd.entity.Car
 import com.hmo.rd.repository.CarRepository
@@ -18,8 +18,8 @@ import reactor.core.publisher.Mono
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers
-class CarRoutesIT(@Autowired val webTestClient: WebTestClient,
-                  @Autowired val repository: CarRepository) {
+class CarApiDelegateIT(@Autowired val webTestClient: WebTestClient,
+                       @Autowired val repository: CarRepository) {
 
     companion object {
 
